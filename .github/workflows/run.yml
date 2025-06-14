@@ -7,9 +7,6 @@ on:
   workflow_dispatch:         # permite rodar manualmente
 
 jobs:
-permissions:
-  contents: write
-
   run-noticias:
     runs-on: ubuntu-latest
 
@@ -29,13 +26,13 @@ permissions:
       env:
         EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
         SENHA: ${{ secrets.SENHA }}
-        EMAILS_DESTINO: ${{ secrets.EMAILS_DESTINO }}
       run: python noticia.py
 
-    - name: Commit e push do arquivo de controle
+    - name: Fazer commit do arquivo noticias_enviadas.txt
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add noticias_enviadas.txt
-        git commit -m "Atualizando lista de notícias enviadas [skip ci]" || echo "Nenhuma alteração para commitar"
+        git commit -m "Atualizando lista de notícias enviadas"
         git push
+      continue-on-error: true
