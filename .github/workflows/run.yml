@@ -3,7 +3,7 @@ name: Monitorar notícias - 7h e 13h
 on:
   schedule:
     - cron: '0 10 * * *'   # 7h Brasília (UTC-3)
-    - cron: '30 16 * * *'   # 13:30 Brasília (UTC-3)
+    - cron: '36 16 * * *'   # 13:36 Brasília (UTC-3)
   workflow_dispatch:         # permite rodar manualmente
 
 jobs:
