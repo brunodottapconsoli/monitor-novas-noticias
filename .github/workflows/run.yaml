@@ -2,7 +2,7 @@ name: Monitorar notícias - agendamento de teste
 
 on:
   schedule:
-    - cron: '*/1 * * * *'   # roda a cada minuto
+    - cron: '*/5 * * * *'   # roda a cada minuto
   workflow_dispatch:         # permite rodar manualmente
 
 jobs:
