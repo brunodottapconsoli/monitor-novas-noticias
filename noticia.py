@@ -7,9 +7,9 @@ from email.mime.text import MIMEText
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-EMAIL_REMETENTE = os.getenv("EMAIL_USER")
+EMAIL_REMETENTE = "noticiasreformatributaria@gmail.com"
 SENHA = "iiex rfev vqsh srgc"
-EMAILS_DESTINO = os.getenv("EMAILS_DESTINO").split(",")
+EMAILS_DESTINO = ["bruno.consoli@telefonica.com"]
 SMTP_SERVIDOR = "smtp.gmail.com"
 SMTP_PORTA = 587
 
