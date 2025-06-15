@@ -5,17 +5,14 @@ import urllib3
 import smtplib
 from email.mime.text import MIMEText
 
-# Ignorar alertas de certificado SSL (caso use rede com proxy)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# CONFIGURAÇÕES DO E-MAIL (Gmail)
-EMAIL_REMETENTE = "brunoconsoli96@gmail.com"
-SENHA = "juqw ouoy edsl vqnz"  # Use uma senha de app do Gmail (não a senha da conta)
+EMAIL_REMETENTE = "noticiasreformatributaria@gmail.com"
+SENHA = "iiex rfev vqsh srgc"
 EMAILS_DESTINO = ["bruno.consoli@telefonica.com"]
 SMTP_SERVIDOR = "smtp.gmail.com"
 SMTP_PORTA = 587
 
-# URLs das páginas e arquivo de controle
 URLS = [
     "https://www.reformatributaria.com/category/governo/",
     "https://www.reformatributaria.com/category/brasil/",
@@ -26,12 +23,10 @@ URLS = [
     "https://www.reformatributaria.com/category/negocios/",
     "https://www.reformatributaria.com/category/tax-capital/",
 ]
+
 ARQUIVO_ENVIADOS = "noticias_enviadas.txt"
+KEYWORDS = ["reforma", "ibs", "cbs"]
 
-# Palavras-chave para filtro (em minúsculas)
-KEYWORDS = ["reforma", "ibs", "cbs", "roit"]
-
-# Carregar links já enviados
 if os.path.exists(ARQUIVO_ENVIADOS):
     with open(ARQUIVO_ENVIADOS, "r", encoding="utf-8") as f:
         links_enviados = set(l.strip() for l in f.readlines())
@@ -45,14 +40,30 @@ for URL in URLS:
         res = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
         soup = BeautifulSoup(res.text, "html.parser")
 
+        # Ponto limite superior: linha onde começa o bloco "Mais notícias"
+        limite_mais_noticias = soup.find("h5", id="h-mais-noticias")
+        linha_mais_noticias = limite_mais_noticias.sourceline if limite_mais_noticias else float('inf')
+
+        # Ponto limite inferior: linha onde começa o bloco "Soluções" (rodapé)
+        limite_rodape = soup.find("h4", id="h-solucoes")
+        linha_rodape = limite_rodape.sourceline if limite_rodape else float('inf')
+
+        # O limite final será o que vier primeiro
+        limite_final = min(linha_mais_noticias, linha_rodape)
+
         for a in soup.find_all("a", href=True):
+            # Verifica a linha onde está o link no HTML
+            if a.sourceline and a.sourceline > limite_final:
+                continue
+
             titulo = a.get_text(strip=True)
             link = a["href"]
             titulo_lower = titulo.lower()
-            if any(k in titulo_lower for k in KEYWORDS) and link not in links_enviados:
-                # Pegar os dois primeiros parágrafos da notícia no link
+
+            # Filtrar apenas links de notícia (não categorias, nem navegação)
+            if any(k in titulo_lower for k in KEYWORDS) and link not in links_enviados and "/category/" not in link:
                 try:
-                    res_noticia = requests.get(link, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=30)
+                    res_noticia = requests.get(link, headers={"User-Agent": "Mozilla/5.0"}, verify=False, timeout=10)
                     soup_noticia = BeautifulSoup(res_noticia.text, "html.parser")
                     ps = soup_noticia.find_all("p")
                     if len(ps) >= 2:
@@ -61,14 +72,15 @@ for URL in URLS:
                         resumo = ps[0].get_text(strip=True)
                     else:
                         resumo = "Resumo não disponível."
-                except Exception:
+                except Exception as e:
+                    print(f"❌ Erro ao acessar notícia {link}: {e}")
                     resumo = "Resumo não disponível."
 
                 novas_noticias.append((titulo, link, resumo))
+
     except Exception as e:
         print(f"❌ Erro ao acessar {URL}: {e}")
 
-# Se houver novas, enviar por e-mail
 if novas_noticias:
     corpo_html = "<h2>Novas notícias sobre Reforma Tributária, IBS e CBS</h2><ul>"
     for titulo, link, resumo in novas_noticias:
