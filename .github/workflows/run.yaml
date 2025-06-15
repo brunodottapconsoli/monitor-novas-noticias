@@ -27,6 +27,7 @@ jobs:
       env:
         EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
         SENHA: ${{ secrets.SENHA }}
+        EMAILS_DESTINO: ${{ secrets.EMAILS_DESTINO }}
       run: python noticia.py
 
     - name: Commit e push das notícias enviadas
